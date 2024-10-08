@@ -1,0 +1,153 @@
+.stepper-wrapper {
+  width: 100%;
+  overflow-x: hidden;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Add flex-wrap property to wrap items on long screens */
+}
+
+.step-indicator-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.stepper-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 150px; /* Adjust the max-width as per your requirement */
+  margin-bottom: 20px; /* Add margin-bottom to create space between items */
+
+  @media (max-width: 768px) {
+    max-width: 120px; /* Adjust the max-width for smaller screens */
+    flex-basis: 100%; /* Make items full width on small screens */
+  }
+}
+
+.stepper-item::before,
+.stepper-item::after {
+  position: absolute;
+  content: "";
+  border-bottom: 2px solid #ccc;
+  width: 100%;
+  top: 20px;
+  left: -50%;
+  z-index: 2;
+}
+
+.stepper-item::after {
+  left: 50%;
+}
+
+.step-name {
+  text-align: center;
+}
+
+.stepper-item .step-counter {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  /* background: #1552fb; */
+  background: #070792ab;
+  margin-bottom: 6px;
+}
+.step-counter{
+  color: white;
+}
+.stepper-item.active {
+  font-weight: bold;
+}
+
+.stepper-item.completed .step-counter {
+  background-color: #4bb543;
+}
+
+.stepper-item.completed::after {
+  position: absolute;
+  content: "";
+  border-bottom: 2px solid #4bb543;
+  width: 100%;
+  top: 20px;
+  left: 50%;
+  z-index: 3;
+}
+
+.stepper-item:first-child::before {
+  content: none;
+}
+
+.stepper-item:last-child::after {
+  content: none;
+}
+
+@media (max-width: 768px) {
+  .step-indicator-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  .stepper-item {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    margin-bottom: 20px; /* Add margin-bottom to create space between items */
+  }
+
+  .step-name {
+    font-size: small;
+  }
+
+  .stepper-item {
+    margin: auto;
+  }
+
+  .stepper-item::before,
+  .stepper-item::after {
+    position: absolute;
+    content: "";
+    border-bottom: 2px solid #ccc;
+    width: 0%;
+    top: 0;
+    left: 0%;
+    z-index: 0;
+  }
+
+  .stepper-item::after {
+    left: 0%;
+  }
+  .stepper-item.completed::after {
+    /* position: absolute;
+    content: "";
+    border-bottom: 2px solid #4bb543;
+    width: 100%;
+    top: 20px;
+    left: 50%;
+    z-index: 3; */
+    position: absolute;
+    content: "";
+    border-bottom: 0px solid #4bb543;
+    width: 0%;
+    top: 0px;
+    left: 0%;
+    z-index: 0;
+}
+}
+.reactEasyCrop_Container{
+/* overflow: visible!important; */
+}

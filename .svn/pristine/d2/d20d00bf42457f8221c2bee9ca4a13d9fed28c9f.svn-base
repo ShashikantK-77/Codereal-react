@@ -1,0 +1,13 @@
+
+REACT_APP_API_BASE_URL=https://kachabazar-combine-backend.vercel.app/api/
+REACT_APP_STORE_DOMAIN=http://localhost:3000
+
+# REACT_APP_CLOUD_NAME= dmxskasmx
+# REACT_APP_CLOUDINARY_API_KEY= 642236856351661
+# REACT_APP_CLOUDINARY_API_SECRET= MO-4rJHWfTH3p-XryPsFsGKJZsI
+# REACT_APP_CLOUDINARY_UPLOAD_PRESET= Shashipreset
+# REACT_APP_CLOUDINARY_URL= https://api.cloudinary.com/v1_1/dmxskasmx/image/upload
+
+
+
+PORT=4000

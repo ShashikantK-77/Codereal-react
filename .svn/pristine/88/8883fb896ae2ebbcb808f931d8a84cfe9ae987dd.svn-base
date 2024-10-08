@@ -1,0 +1,472 @@
+import React, { useState, useEffect, useContext } from "react";
+import { Card, CardBody, Button } from "@windmill/react-ui";
+import axios from "axios";
+import HeadKyc from "components/KYC/HeadKyc";
+import Inputfields from "../Inputfields";
+import Error from "components/form/Error";
+import useStrategySubmit from "hooks/useStrategySubmit";
+import { MdOutlineNavigateNext } from "react-icons/md";
+import { notifySuccess } from "utils/toast";
+import { useForm } from "react-hook-form";
+import useStepperRecord from "hooks/useStepperRecord";
+import { CreateStrategyContext } from "context/CreateStrategyContext";
+import { useListContext } from "context/ListContext";
+import { FiX } from "react-icons/fi";
+
+import { Modal, ModalHeader, ModalBody, ModalFooter } from "@windmill/react-ui";
+
+const AssetsSelection = ({ handleNext }) => {
+  const [strategyName, setStrategyName] = useState("");
+  const [Description, setDescription] = useState("");
+  const [exchange, setExchange] = useState("NSE");
+  const [selectedOption, setSelectedOption] = useState("");
+  const [niftyOption, setNiftyOption] = useState("");
+  const [finniftyOption, setFinniftyOption] = useState("");
+  const [bankniftyOption, setBankniftyOption] = useState("");
+  const [optionsOption, setOptionsOption] = useState("");
+  const [futuresOption, setFuturesOption] = useState("");
+
+  const [availableStocks, setAvailableStocks] = useState([]);
+
+  const { UniqueID } = useContext(CreateStrategyContext);
+
+  const { WorkingStrategy } = useListContext();
+
+  console.log("WorkingStrategy in asset selection:", WorkingStrategy);
+  // Use the custom hook to fetch data from localStorage
+  const { assets } = useStepperRecord(WorkingStrategy); // Pass WorkingStrategy here
+
+  console.log("incomplete assets in asset selection is:", assets);
+
+  // const { updateCurrentStepForUniqueID } = useStepperRecord();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    onSubmit,
+    // Clear the form fields
+    reset,
+  } = useForm({});
+  // const { errors, register, handleSubmit, onSubmit } = useStrategySubmit();
+
+  useEffect(() => {
+    if (exchange === "BSE" || exchange === "STOCK") {
+      // fetchAvailableStocks(exchange);
+      fetchAssets();
+    }
+  }, [exchange]);
+
+  const fetchAvailableStocks = async (exchange) => {
+    try {
+      // Replace 'YOUR_API_KEY' and 'YOUR_API_SECRET' with your Alpaca credentials
+      const response = await fetch(
+        "https://paper-api.alpaca.markets/v2/assets",
+        {
+          headers: {
+            "APCA-API-KEY-ID": "PKYP9KGLKLIKTFU54DC5",
+            "APCA-API-SECRET-KEY": "KQNI9rUdhvhP5qRQxl2oMwHAYrlVkfJDrT4AxPcT",
+          },
+        }
+      );
+
+      const stocks = response.data;
+
+      // setAvailableStocks(filteredStocks);
+      setAvailableStocks(stocks);
+    } catch (error) {
+      console.error("Error fetching available stocks:", error);
+    }
+  };
+
+  const fetchAssets = async () => {
+    try {
+      const response = await fetch(
+        "https://paper-api.alpaca.markets/v2/assets",
+        {
+          headers: {
+            "APCA-API-KEY-ID": "PKSWP5Z6U0OS356MGMBG",
+            "APCA-API-SECRET-KEY": "huu1EiruE2Bf4QcXHg6y0fh6IklCthnonehQOf60",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableStocks(data);
+      } else {
+        console.error("Failed to fetch assets");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      // setLoading(false);
+    }
+  };
+  // console.log(availableStocks);
+
+  const handleFormSubmit = (data) => {
+    const formattedData = {
+      exchange,
+      strategyName,
+      // Description,
+      selectedOption,
+      niftyOption,
+      finniftyOption,
+      bankniftyOption,
+      optionsOption,
+      futuresOption,
+      UniqueID,
+      ...data,
+    };
+
+    // Filter out blank values
+    const filteredData = Object.fromEntries(
+      Object.entries(formattedData).filter(([_, value]) => value !== "")
+    );
+
+    console.log("Data to be stored in local storage:", filteredData);
+
+    const existingData = localStorage.getItem("assetselection");
+
+    if (existingData) {
+      // If 'assetselection' exists, append filteredData to it
+      const parsedData = JSON.parse(existingData);
+      const updatedData = [...parsedData, filteredData];
+
+      // Update 'assetselection' in local storage with the updated data
+      localStorage.setItem("assetselection", JSON.stringify(updatedData));
+    } else {
+      // If 'assetselection' doesn't exist, create a new table with filteredData
+      localStorage.setItem("assetselection", JSON.stringify([filteredData]));
+    }
+
+    // console.log('Data to be stored in local storage:', formattedData);
+
+    // console.log('Data to be stored in local storage:', data,exchange);
+
+    // Save data to local storage
+    // localStorage.setItem('assesselection', JSON.stringify(formattedData));
+    // console.log('***************in Scrip Selection Step:', formattedData);
+    // onSubmit(formattedData);
+    notifySuccess("Scrip Selection Saved");
+    handleNext();
+
+    // Update 'currentStep' in localStorage
+
+    // updateCurrentStepForUniqueID(UniqueID);
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [inputDesc, setinputDesc] = useState("");
+
+  const handleInputChange = (e) => {
+    setinputDesc(e.target.value);
+  };
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  return (
+    <div className="p-2">
+      <Card className="w-min">
+        <CardBody>
+          <form onSubmit={handleSubmit(handleFormSubmit)}>
+            <HeadKyc title="Scrip Selection" />
+            <div className="grid lg:grid-cols-2 sm:grid-cols-1">
+              <div className="flex flex-col justify-center">
+                <Inputfields
+                  register={register}
+                  label={"Strategy Name"}
+                  name={"strategyName"}
+                  placeholder={"Enter Strategy Name"}
+                  value={strategyName}
+                  onChange={(e) => setStrategyName(e.target.value)}
+                />
+                {errors.strategyName && (
+                  <Error
+                    style={{ marginTop: "-2rem" }}
+                    errorName={errors.strategyName}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 sm:grid-cols-1">
+              <div className="flex flex-col justify-center">
+                <Inputfields
+                  register={register}
+                  label={"Strategy Description"}
+                  name={"strategyDescription"}
+                  placeholder={"Enter Strategy Description"}
+                  value={Description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                {/* {errors.strategyName && (
+                  <Error style={{ marginTop: '-2rem' }} errorName={errors.strategyName} />
+                )} */}
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 sm:grid-cols-1">
+              <div className="flex flex-col justify-center">
+                <Inputfields
+                  register={register}
+                  label={"Underlying Symbol"}
+                  name={"strateg"}
+                  placeholder={"Enter Underlying Symbol"}
+                  value={inputDesc}
+                  onChange={handleInputChange}
+                  onClick={handleModalOpen}
+                  // onFocus={handleModalOpen}
+                  // onClick={() => alert("SHASHI")}
+                />
+                {/* {errors.strategyName && (
+                  <Error style={{ marginTop: '-2rem' }} errorName={errors.strategyName} />
+                )} */}
+              </div>
+              {isModalOpen && (
+                <Modal isOpen={isModalOpen} onClose={handleModalClose}>
+                  <div className="flex justify-between items-center">
+                    <ModalHeader>Select Underlying Symbol</ModalHeader>
+                    <button
+                      onClick={handleModalClose}
+                      className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                    >
+                      {/* cLOSEBTN */}
+                      <FiX size={24} />
+                    </button>
+                  </div>
+                  <ModalBody>
+                    <div className="grid lg:grid-cols-1 sm:grid-cols-1">
+                      <div className="flex items-start lg:items-center m-2 lg:m-2 sm:m-0 flex-col sm:flex-row ">
+                        <label
+                          className="block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0"
+                          style={{ width: "155px" }}
+                        >
+                          Exchange:
+                        </label>
+                        <div className="w-full lg:flex-grow sm:w-full">
+                          <select
+                            name="Exchange"
+                            label="Futures Option"
+                            // value={futuresOption}
+                            onChange={(e) => setFuturesOption(e.target.value)}
+                            className="border px-4 h-12 text-sm focus:outline-none w-full bg-gray-100 dark:bg-white border-transparent focus:bg-white focus:border-gray-200 border-gray-200 dark:border-gray-600 focus:ring focus:ring-green-300 dark:focus:border-gray-500 dark:focus:ring-gray-300 dark:bg-gray-700 border"
+                          >
+                            <option value="">
+                              -- Select Exchange --
+                            </option>
+                            <option value="BSE">BSE</option>
+                            <option value="CDS">CDS</option>
+                            <option value="MCX">MCX</option>
+                            <option value="NSE">NSE</option>
+                            <option value="NFO">NFO</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div className="grid lg:grid-cols-1 sm:grid-cols-1">
+                    <div className='flex items-start lg:items-center m-2 lg:m-2 sm:m-0 flex-col sm:flex-row '>
+                <label
+                  className='block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0'
+                  style={{ width: '155px' }}
+                >
+                   Segment:
+                </label>
+                <div className='w-full lg:flex-grow sm:w-full'>
+                  <select
+                    name='Segment'
+                    label='Futures Option'
+                    // value={futuresOption}
+                    onChange={(e) => setFuturesOption(e.target.value)}
+                    className='border px-4 h-12 text-sm focus:outline-none w-full bg-gray-100 dark:bg-white border-transparent focus:bg-white focus:border-gray-200 border-gray-200 dark:border-gray-600 focus:ring focus:ring-green-300 dark:focus:border-gray-500 dark:focus:ring-gray-300 dark:bg-gray-700 border'
+                 
+                  >
+                    <option value=''>-- Select Segment --</option>
+                    <option value='FUT'>FUT</option>
+                  
+                  </select>
+                </div>
+              </div>
+          
+            </div>
+
+
+            <div className="grid lg:grid-cols-1 sm:grid-cols-1">
+                    <div className='flex items-start lg:items-center m-2 lg:m-2 sm:m-0 flex-col sm:flex-row '>
+                <label
+                  className='block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0'
+                  style={{ width: '155px' }}
+                >
+                   Symbol:
+                </label>
+                <div className='w-full lg:flex-grow sm:w-full'>
+                  <select
+                    name='Symbol'
+                    label='Symbol'
+                    // value={futuresOption}
+                    onChange={(e) => setFuturesOption(e.target.value)}
+                    className='border px-4 h-12 text-sm focus:outline-none w-full bg-gray-100 dark:bg-white border-transparent focus:bg-white focus:border-gray-200 border-gray-200 dark:border-gray-600 focus:ring focus:ring-green-300 dark:focus:border-gray-500 dark:focus:ring-gray-300 dark:bg-gray-700 border'
+                 
+                  >
+                    <option value=''>-- Select Symbol --</option>
+                    <option value='Call'>BAJAJFINANCE</option>
+                    <option value='Put'>AAPL</option>
+                    <option value='Put'>ADANI</option>
+                    <option value='Put'>BAJAJFINSAV</option>
+                  </select>
+                </div>
+              </div>
+          
+            </div>
+
+            
+                  </ModalBody>
+                  <ModalFooter>
+                    <div className="flex justify-end space-x-4">
+                      <Button
+                        // onClick={handleSelect}
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                      >
+                        Select
+                      </Button>
+                      <Button
+                        // onClick={handleCancel}
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </ModalFooter>
+                </Modal>
+              )}
+            </div>
+
+            <div className="flex ">
+              <div>
+                {" "}
+                <label
+                  className="block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0"
+                  style={{ width: "155px" }}
+                >
+                  {/* {label}: */}
+                </label>
+              </div>
+              <div className="grid lg:grid-cols-2 sm:grid-cols-1">
+                <div className="flex  justify-between m-2">
+                  <div
+                  // className="mx-2"
+                  >
+                    <label
+                      className="block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0"
+                      htmlFor="firstOption"
+                    >
+                      Trading Type
+                    </label>
+                    <select
+                      id="firstOption"
+                      name="firstOption"
+                      className="border px-4 h-12 text-sm focus:outline-none w-full bg-gray-100 dark:bg-white border-transparent focus:bg-white focus:border-gray-200 border-gray-200 dark:border-gray-600 focus:ring focus:ring-green-300 dark:focus:border-gray-500 dark:focus:ring-gray-300 dark:bg-gray-700 border mr-3"
+                      placeholder="selct is here"
+                      // value={firstOption}
+                      // onChange={(e) => setFirstOption(e.target.value)}
+                    >
+                      <option value="">-- Select Trading Type --</option>
+                      <option value="intraday">intraday</option>
+                      <option value="positional">positional</option>
+                    </select>
+                  </div>
+
+                  <div
+                    // className="mx-2"
+                    className="ml-2"
+                  >
+                    <label
+                      className="block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0"
+                      htmlFor="secondOption"
+                    >
+                      Product
+                    </label>
+                    <select
+                      id="secondOption"
+                      name="secondOption"
+                      className="border px-4 h-12 text-sm focus:outline-none w-full bg-gray-100 dark:bg-white border-transparent focus:bg-white focus:border-gray-200 border-gray-200 dark:border-gray-600 focus:ring focus:ring-green-300 dark:focus:border-gray-500 dark:focus:ring-gray-300 dark:bg-gray-700 border mr-2"
+                      placeholder="selct is here"
+                      // value={secondOption}
+                      // onChange={(e) => setSecondOption(e.target.value)}
+                    >
+                      <option value="">-- Select Product --</option>
+                      <option value="MIS">MIS</option>
+                      <option value="NRML">NRML</option>
+                      <option value="CNC">CNC</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex ">
+              <div>
+                {" "}
+                <label
+                  className="block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0"
+                  style={{ width: "155px" }}
+                >
+                  {/* {label}: */}
+                  {/* Trading Type */}
+                </label>
+              </div>
+              <div className="grid lg:grid-cols-2 sm:grid-cols-1">
+                <div className="flex   ">
+                  <div className="w-max ml-2">
+                    <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0">
+                      Entry Time
+                    </label>
+                    <input
+                      className="border px-4 h-12 text-sm focus:outline-none w-full bg-gray-100 dark:bg-white border-transparent focus:bg-white focus:border-gray-200 border-gray-200 dark:border-gray-600 focus:ring focus:ring-green-300 dark:focus:border-gray-500 dark:focus:ring-gray-300 dark:bg-gray-700 border"
+                      placeholder="dtae is date"
+                      type="date"
+                      // style={{ width: '100%' }} // Inline style to set width to 100%
+                      // style={{ appearance: 'textfield' }}
+                    />
+                  </div>
+
+                  <div className="w-max ml-2">
+                    <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400 sm:text-left flex-shrink-0">
+                      Sqrf Time
+                    </label>
+                    <input
+                      className="border px-4 h-12 text-sm focus:outline-none w-full bg-gray-100 dark:bg-white border-transparent focus:bg-white focus:border-gray-200 border-gray-200 dark:border-gray-600 focus:ring focus:ring-green-300 dark:focus:border-gray-500 dark:focus:ring-gray-300 dark:bg-gray-700 border"
+                      placeholder="dtae is date"
+                      type="date"
+                      // style={{ width: '100%' }} // Inline style to set width to 100%
+                      // style={{ appearance: 'textfield' }}
+                    />
+                  </div>
+                </div>
+
+                {/* <div></div> */}
+              </div>
+            </div>
+
+            <div className="flex justify-center mx-3 ">
+              <Button type="submit" className="mx-4 text-white">
+                Submit & Next <MdOutlineNavigateNext className="font-bold" />
+              </Button>
+            </div>
+          </form>
+        </CardBody>
+      </Card>
+    </div>
+  );
+};
+
+export default AssetsSelection;

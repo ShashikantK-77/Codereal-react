@@ -1,0 +1,150 @@
+import React, { useContext, useEffect } from 'react'
+import {
+    Button,
+    Card,
+    CardBody,
+    Input,
+    Pagination,
+    Table,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TableHeader,
+  } from "@windmill/react-ui";
+  import { useTranslation } from "react-i18next";
+  import { FiPlus } from 'react-icons/fi';
+import { useState } from 'react';
+import { useHistory } from 'react-router-dom'; // Import useHistory from React Router
+import { CreateStrategyContext } from 'context/CreateStrategyContext';
+import { AdminContext } from 'context/AdminContext';
+import { useStepperContext } from 'context/StepperContext';
+import { useListContext } from 'context/ListContext';
+import useStepperRecord from 'hooks/useStepperRecord';
+
+const Filter = () => { const {  SetUniqueID } = useContext(CreateStrategyContext);
+
+
+const [strategyData, setStrategyData] = useState([]);
+const [filteredStrategies, setFilteredStrategies] = useState([]);
+const { setWorkingStrategy } = useListContext();
+
+
+// Retrieve the stepper context
+const { setCurrentStep} = useStepperContext();
+
+useEffect(() => {
+  const fetchStrategyData = async () => {
+    try {
+      const storedStrategyData = localStorage.getItem('strategycreation');
+      
+      if (storedStrategyData) {
+        const strategies = JSON.parse(storedStrategyData);
+        
+        const filteredStrategies = strategies.filter(
+          strategy => strategy.UserID === zenithQuark.UserID // Replace with the UserID you have
+        );
+
+        setStrategyData(strategies);
+        setFilteredStrategies(filteredStrategies)
+        console.log("filteredStrategies in createstratcontext",filteredStrategies);
+      }
+    } catch (error) {
+      console.error('Error fetching strategy data:', error);
+    }
+  };
+  setCurrentStep(0)
+  fetchStrategyData();
+}, []);
+
+
+
+
+const { state } = useContext(AdminContext);
+const { zenithQuark } = state;
+
+const lastStrategy = filteredStrategies[filteredStrategies.length - 1];
+
+const [searchName, setSearchName] = useState("");
+const history = useHistory();
+const { t } = useTranslation();
+
+const handleCreateClick = () => {
+  history.push('/makestrategy');
+
+  console.log("filter component recieving filteredStrategies for this user:",filteredStrategies);
+
+  console.log("filter component recieving lastStrategy incomplete for this user:",lastStrategy);
+  setWorkingStrategy(lastStrategy);
+
+
+
+  if ( (lastStrategy && !lastStrategy.isComplete)) {
+    // if (!filteredStrategies.length || (lastStrategy && !lastStrategy.isComplete)) {
+  // if (!strategyData.length || lastStrategy?.isComplete) {
+    console.log("in else blck that means already having isComplete==>false");
+    SetUniqueID(lastStrategy.UniqueID);
+    
+  }else{
+    
+    const prefix = 'STR';
+    const timestamp = Date.now();
+    const uniqueID = `${prefix}_${timestamp}`;
+    const currentDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+
+    SetUniqueID(uniqueID);
+
+    const newStrategy = {
+      UniqueID: uniqueID,
+      isComplete: false,
+      Date: currentDate,
+      UserID: zenithQuark.UserID,
+    };
+
+    console.log("filter component newStrategy has to raedy saved in locastorage :",newStrategy);
+    // console.log("adminInfo.UserID:",adminInfo.UserID);
+
+    const updatedStrategyData = [...strategyData, newStrategy];
+
+    setStrategyData(updatedStrategyData);
+    console.log("filter component updatedStrategyData for this user has been saved in strategycreation with new startegy:",updatedStrategyData);
+    localStorage.setItem('strategycreation', JSON.stringify(updatedStrategyData));
+  }
+
+      };
+  return (
+    <div>
+      <Card className="min-w-0 shadow-xs overflow-hidden bg-white dark:bg-gray-800 mb-5">
+        <CardBody>
+          <form
+            // onSubmit={handleSubmitUser}
+            className="py-3 grid gap-4 lg:gap-6 xl:gap-6 md:flex xl:flex"
+          >
+            <div className="flex-grow-0 md:flex-grow lg:flex-grow xl:flex-grow">
+              <Input
+                // ref={userRef}
+                className="border h-12 text-sm focus:outline-none block w-full bg-gray-100 border-transparent focus:bg-white"
+                type="search"
+                name="search"
+                onChange={(e) => setSearchName(e.target.value)}
+                placeholder= "Search by Strategies"
+              />
+              <button type="submit" className="absolute right-0 top-0 mt-5 mr-1"></button>
+            </div>
+            <div className="w-full md:w-56 lg:w-56 xl:w-56">
+              <Button 
+              onClick={handleCreateClick} 
+              className="w-full rounded-md h-12">
+                <span className="mr-3">
+                  <FiPlus/>
+                </span>
+               Create Strategy
+              </Button>
+            </div>
+          </form>
+        </CardBody>
+      </Card>
+    </div>
+  )
+}
+
+export default Filter

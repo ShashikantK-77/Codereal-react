@@ -1,0 +1,54 @@
+
+
+import { FiLayout, FiHelpCircle, FiSettings, FiTrello, FiGrid,FiTrendingUp  } from 'react-icons/fi';
+
+
+/**
+ * ⚠ These are used just to render the Sidebar!
+ * You can include any link here, local or external.
+ *
+ * If you're looking to actual Router routes, go to
+ * `routes/index.js`
+ */
+const sidebar = [
+  {
+    path: "/masterdashboard", // the url
+    icon: FiGrid, // icon
+    name: "Dashboard", // name that appear in Sidebar
+  },
+  {
+    path: "/strategymaster",
+    icon: FiTrello,
+    name: "Strategies",
+  },
+  {
+    path: "/templates",
+    icon: FiLayout,
+    name: "Templates",
+  },
+  {
+    path: "/papertrading",
+    icon: FiTrendingUp ,
+    name: "PaperTrading",
+  },
+  {
+    path: "/help",
+    icon: FiHelpCircle,
+    name: "Help",
+  },
+  {
+    path: "/settings",
+    icon: FiSettings,
+    name: "Settings",
+  },
+
+
+
+
+  
+];
+
+export default sidebar;
+
+
+

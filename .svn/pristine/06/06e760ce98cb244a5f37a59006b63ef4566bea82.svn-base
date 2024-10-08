@@ -1,0 +1,332 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  CardBody,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@windmill/react-ui";
+import Status from 'components/table/Status';
+import {FiX } from 'react-icons/fi';
+import Backtest from './Backtest';
+import useStepperRecord from 'hooks/useStepperRecord';
+import Delete from './Delete';
+
+const Strategy = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBacktestModalOpen, setIsBacktestModalOpen] = useState(false);
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
+  const [strategies, setStrategies] = useState([]);
+  const [assets, setAssets] = useState([]);
+
+  const [completeStrategies, setCompleteStrategies] = useState([]);
+  const [consolidatedData, setConsolidatedData] = useState([]);
+
+  // Fetch strategies from local storage when the component mounts
+  useEffect(() => {
+    const fetchCompleteStrategies = async () => {
+      try {
+        const storedStrategyData = localStorage.getItem('strategycreation');
+        if (storedStrategyData) {
+          const strategies = JSON.parse(storedStrategyData);
+
+          // Filter strategies where isComplete is true
+          const completeStrategies = strategies.filter(strategy => strategy.isComplete);
+          
+          setCompleteStrategies(completeStrategies);
+        }
+      } catch (error) {
+        console.error('Error fetching complete strategies:', error);
+      }
+    };
+
+    fetchCompleteStrategies();
+  }, []);
+
+  // useEffect(() => {
+  //   const consolidated = [];
+    
+  //   // Loop through completeStrategies to fetch additional data for each UniqueID
+  //   completeStrategies.forEach(strategy => {
+  //     const localStorageKeys = ['assetselection', 'Actionselection', 'indicators'];
+  //     const fetchedData = {};                                             
+
+  //     localStorageKeys.forEach(key => {
+  //       const localStorageData = JSON.parse(localStorage.getItem(key)) || [];
+  //       const filteredData = localStorageData.filter(item => item.UniqueID === strategy.UniqueID);
+  //       fetchedData[key] = filteredData;
+  //     });
+
+  //     // consolidated.push({ UniqueID: strategy.UniqueID, data: fetchedData });
+  //     consolidated.push({ fetchedData });
+  //   });
+
+  //   setConsolidatedData(consolidated);
+    
+  // }, [completeStrategies]);
+
+  useEffect(() => {
+    const consolidated = [];
+  
+    completeStrategies.forEach(strategy => {
+      const localStorageKeys = ['assetselection', 'Actionselection', 'indicators'];
+      const fetchedData = {};
+  
+      localStorageKeys.forEach(key => {
+        const localStorageData = JSON.parse(localStorage.getItem(key)) || [];
+  
+        if (key === 'indicators') {
+          const filteredData = localStorageData.find(item => item.uniqueID === strategy.UniqueID);
+          fetchedData[key] = filteredData ? filteredData.conditions : [];
+        } else {
+          const filteredData = localStorageData.filter(item => item.UniqueID === strategy.UniqueID);
+          fetchedData[key] = filteredData;
+        }
+      });
+  
+      consolidated.push({ fetchedData });
+    });
+  
+    setConsolidatedData(consolidated);
+  }, [completeStrategies]);
+  
+
+  console.log("consolidatedData:",consolidatedData);
+     
+
+  useEffect(() => {
+    // Fetch data from local storage when the component mounts
+    // const existingDataString = localStorage.getItem('actionStrategy');
+    // const existingData = existingDataString ? JSON.parse(existingDataString) : [];
+    setStrategies(consolidatedData);
+
+    // const existingDataStringAssets = localStorage.getItem('StrategyMaster');
+    // const existingDataAssets = existingDataStringAssets ? JSON.parse(existingDataStringAssets) : [];
+    // setAssets(existingDataAssets);
+
+    // console.log('Assets:', existingDataAssets);
+  }, []);
+
+  const openModal = (strategy) => {
+    setSelectedStrategy(strategy);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedStrategy(null);
+    setIsModalOpen(false);
+  };
+
+  const handleEdit = () => {
+    // Handle edit logic here using selectedStrategy
+    // Redirect or open an edit form, etc.
+    closeModal();
+  };
+
+  const handleDelete = () => {
+    // Handle delete logic here using selectedStrategy
+    // Delete the strategy and update the list
+    closeModal();
+  };
+
+  const openBacktestModal = (data) => {
+    setSelectedStrategy(data)
+    setIsBacktestModalOpen(true);
+    setIsModalOpen(false);
+};
+
+const closeBacktestModal = () => {
+    setIsBacktestModalOpen(false);
+};
+
+  return (
+    <div className="p-2">
+      <Card className="w-min">
+        <CardBody>
+          <h1 className="text-xl font-semibold mb-4">Previous Strategies</h1>
+  
+          <div className="grid grid-cols-1 gap-4">
+
+          {consolidatedData.map((data, index) => (
+          <div key={index} className="border p-4 rounded-lg shadow-md">
+            {/* Render the content from consolidatedData */}
+            {/* <p>:</p> */}
+            <h2 className='text-lg font-semibold'>Actionselection:</h2>
+            <ul>
+              {data.fetchedData.Actionselection.map((item, i) => (
+                <li key={i}>
+                <span className="font-bold text-gray-500">Action:</span> {item.Action},
+                <span className="font-bold text-gray-500">ActionType:</span> {item.ActionType}
+    
+                </li>
+              ))}
+            </ul>
+            {/* Similarly, display other keys like assetselection and indicators */}
+     
+            {/* <p>:</p> */}
+            <h2 className='text-lg font-semibold'>Assetselection:</h2>
+
+            <ul>
+              {data.fetchedData.assetselection.map((item, i) => (
+                <li key={i}>
+                {/* Exchange: {item.exchange}, Selected Option: {item.selectedOption}, UniqueID: {item.UniqueID} */}
+
+                <li key={i} className="mb-4">
+      {/* Exchange */}
+      <span className="font-bold text-gray-500">Exchange:</span> {item.exchange},
+      {/* strategyName */}
+      <span className="font-bold text-gray-500">Strategy Name:</span> {item.strategyName},
+      {/* niftyOption */}
+      <span className="font-bold text-gray-500">Nifty Option:</span> {item.niftyOption},
+      {/* selectedOption */}
+      <span className="font-bold text-gray-500">Selected Option:</span> {item.selectedOption},
+      {/* strategyDescription */}
+      <span className="font-bold text-gray-500">Strategy Description:</span> {item.strategyDescription}
+    </li>
+
+                </li>
+                  // Display assetselection information
+              ))}
+            </ul>
+            {/* <p>:</p> */}
+            <h2 className='text-lg font-semibold'>Indicators:</h2>
+
+            <ul>
+            {data.fetchedData.indicators && data.fetchedData.indicators.map((item, i) => (
+  <li key={i}>
+  {
+      item.Indicator === 'RSI' ? (
+        <span>
+        <span className="font-bold text-gray-500">Indicator:</span> {item.Indicator},
+      {/* Acceleration */}
+      <span className="font-bold text-gray-500">Acceleration:</span> {item.acceleration},
+      {/* Maximum */}
+      <span className="font-bold text-gray-500">Maximum:</span> {item.maximum}
+        </span>
+      ) : item.Indicator === 'SMA' ? (
+        <span>
+        <span className="font-bold text-gray-500">Indicator:</span> {item.Indicator},
+      {/* Overbought */}
+      <span className="font-bold text-gray-500">Overbought:</span> {item.overbought},
+      {/* Oversold */}
+      <span className="font-bold text-gray-500">Oversold:</span> {item.oversold},
+      {/* Period */}
+      <span className="font-bold text-gray-500">Period:</span> {item.period}
+        </span>
+      ) : item.Indicator === 'MACD' ? (
+        <span>
+        <span className="font-bold text-gray-500">Indicator:</span> {item.Indicator},
+      {/* Long_Period */}
+      <span className="font-bold text-gray-500">Long_Period:</span> {item.Long_Period},
+      {/* Short_Period */}
+      <span className="font-bold text-gray-500">Short_Period:</span> {item.Short_Period},
+      {/* Signal_Period */}
+      <span className="font-bold text-gray-500">Signal_Period:</span> {item.Signal_Period}        </span>
+      ) : item.Indicator === 'PSR' ?
+                  ( <span>  Indicator: {item.Indicator}, max_ma: {item.max_ma}, min_ma: {item.min_ma},
+                   </span> ): (
+        <span>Unknown Indicator Type</span>
+      ) 
+    }
+  </li>
+))}
+
+            </ul>     
+            <div>
+            <div className="mt-2">
+                  <Button
+                    onClick={() => openModal(assets[index])}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-2 py-1 rounded-full m-2"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() => openModal(data)}
+                    className="bg-red-600 hover:bg-red-600 text-white font-semibold px-2 py-1 rounded-full m-2"
+                  >
+                    Delete
+                  </Button>
+
+                  <Button
+                    // onClick={openBacktestModal}
+                    onClick={() => openBacktestModal(data)} // Pass entire strategy data to openBacktestModal
+
+                    className="bg-pink-800 hover:bg-red-600 text-white font-semibold px-2 py-1 rounded-full m-2"
+                  >
+                    Backtest
+                  </Button>
+
+                  <Button
+                    // onClick={() => openModal(assets[index])}
+                    className="bg-red-600 hover:bg-red-600 text-white font-semibold px-2 py-1 rounded-full m-2"
+                  >
+                    Live
+                  </Button>
+
+                </div>
+            </div>     
+          </div>
+        ))}
+
+          </div>
+        </CardBody>
+      </Card>
+
+      {/* Edit/Delete Modal */}
+      {selectedStrategy && (
+        <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <div className='flex justify-between items-center'>
+          <ModalHeader>Edit or Delete Strategy</ModalHeader>
+          <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 focus:outline-none">
+
+        <FiX size={24} />
+      </button>
+          </div>
+          <ModalBody>
+           <Delete/>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={handleEdit} className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-full mr-2">
+              Edit
+            </Button>
+            <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-full">
+              Delete
+            </Button>
+          </ModalFooter>
+        </Modal>
+      )}
+
+       {/* Backtest Modal */}
+       {isBacktestModalOpen && (
+                <Modal isOpen={isBacktestModalOpen} onClose={closeBacktestModal}>
+                <div className='flex justify-between items-center'>
+          <ModalHeader>Backtest Strategy</ModalHeader>
+          <button onClick={closeBacktestModal} className="text-gray-500 hover:text-gray-700 focus:outline-none">
+        <FiX size={24} />
+      </button>
+
+      
+          </div>
+          <ModalBody>
+            {/* <p>Strategy Name: {selectedStrategy.exchange} </p>
+            <p>Description: {selectedStrategy.selectedOption}</p> */}
+            <Backtest Strategy={selectedStrategy}/>
+            {/* <Sample/> */}
+          </ModalBody>
+          <ModalFooter>
+            {/* <Button onClick={handleEdit} className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-full mr-2">
+              Edit
+            </Button>
+            <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-full">
+              Delete
+            </Button> */}
+          </ModalFooter>
+                </Modal>
+            )}
+    </div>
+  );
+}
+
+export default Strategy;

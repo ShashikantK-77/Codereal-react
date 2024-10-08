@@ -1,0 +1,92 @@
+import React, { useState } from 'react';
+
+function Backtest({Strategy}) {
+  const [symbol, setSymbol] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [response, setResponse] = useState(null);
+
+  console.log("Strategy:",Strategy);
+
+  const handleBacktest = async () => {
+    try {
+      const requestBody = {
+        symbol,
+        start_date: startDate,
+        end_date: endDate,
+      };
+
+      const requestOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      };
+
+      const apiUrl = 'http://127.0.0.1:8000/backtest/';
+
+      const response = await fetch(apiUrl, requestOptions);
+      const data = await response.json();
+
+      setResponse(data); // Update state with API response
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-md p-4 bg-gray-100 rounded-md shadow-md">
+      <h1 className="text-2xl font-bold mb-4">Backtest Component</h1>
+      <div className="mb-4">
+        <label className="block mb-2">
+          Symbol:
+          <input
+            type="text"
+            className="block w-full p-2 border border-gray-300 rounded-md"
+            value={symbol}
+            onChange={(e) => setSymbol(e.target.value)}
+          />
+        </label>
+      </div>
+      <div className="mb-4">
+        <label className="block mb-2">
+          Start Date:
+          <input
+            type="date"
+            className="block w-full p-2 border border-gray-300 rounded-md"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </label>
+      </div>
+      <div className="mb-4">
+        <label className="block mb-2">
+          End Date:
+          <input
+            type="date"
+            className="block w-full p-2 border border-gray-300 rounded-md"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </label>
+      </div>
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+        onClick={handleBacktest}
+      >
+        Perform Backtest
+      </button>
+      {response && (
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold mb-2">Backtest Results:</h2>
+          {/* <pre className="bg-gray-200 p-4 rounded-md">{JSON.stringify(response, null, 2)}</pre> */}
+          <pre className="bg-gray-200 p-4 rounded-md">{JSON.stringify(response, null, 2)}</pre>
+
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default Backtest;

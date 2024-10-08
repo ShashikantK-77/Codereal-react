@@ -1,0 +1,21 @@
+import { useState } from 'react';
+import CryptoJS from 'crypto-js';
+
+const useEncryption = () => {
+  const [secretKey] = useState('yourSecretKey'); // Replace with your secret key
+
+  const encrypt = (data) => {
+    const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(data), secretKey).toString();
+    return encryptedData;
+  };
+
+  const decrypt = (encryptedData) => {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    return decryptedData;
+  };
+
+  return { encrypt, decrypt };
+};
+
+export default useEncryption;

@@ -1,0 +1,72 @@
+import React,{useState} from 'react';
+import { Line } from 'react-chartjs-2';
+
+const StrategyDetailscomp = () => {
+  const [showChart, setShowChart] = useState(false);
+  const chartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        label: 'Performance',
+        data: [65, 59, 80, 81, 56, 55],
+        fill: false,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        tension: 0.1,
+      },
+    ],
+  };
+
+  const suggestedStrategies = {
+    id: 1,
+    title: 'Short Straddle',
+    status: '2 Leg | Nifty Bank | Intraday | Required Margin 180K',
+    description:
+      'Bank Nifty will experience very little volatility. Sell Call and sell Put option of the same strike price. Risk is unlimited and Reward is...',
+    time: 'Start Time: 09 : 30 | End Time: 15 : 00',
+    subscribed: false,
+  };
+
+  return (
+    <div className="max-w-full  p-6">
+      <h1 className="text-3xl font-semibold mb-6 text-center text-red-600">{suggestedStrategies.title}</h1>
+      <div className="max-w-full flex flex-col md:flex-row gap-6 mb-8">
+        <div className="bg-white shadow-md rounded-md p-6 flex-grow max-w-full">
+          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+          <div className="mb-4">
+            <span className="font-semibold">Symbol:</span> Nifty Bank
+          </div>
+          <div className="mb-4">
+            <span className="font-semibold">Status:</span> {suggestedStrategies.status}
+          </div>
+          {/* Add other basic information */}
+        </div>
+        <div className="bg-white shadow-md rounded-md p-6 flex-grow max-w-full">
+          <h2 className="text-xl font-semibold mb-4">Time Details</h2>
+          <div className="mb-4">
+            <span className="font-semibold">Time: 
+            </span> {suggestedStrategies.time}
+          </div>
+          {/* Add other time-related details */}
+        </div>
+      </div>
+      <div className="bg-white shadow-md rounded-md p-6 mb-8 max-w-full">
+        <h2 className="text-xl font-semibold mb-4">Description</h2>
+        <p className="mb-6">{suggestedStrategies.description}</p>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => setShowChart(!showChart)}
+        >Backtest</button>
+        {/* Placeholder for chart */}
+        {showChart && (
+          <div className="flex justify-center mt-4">
+            <div style={{ width: '60%' }}>
+              <Line data={chartData} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default StrategyDetailscomp;

@@ -1,0 +1,220 @@
+import { notifyError, notifySuccess } from "utils/toast";
+import requests from "./httpService";
+
+const generateRandomPassword = (length) => {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  let password = "";
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset.charAt(randomIndex);
+  }
+
+  return password;
+};
+
+function generateUserID() {
+  const timestamp = Date.now().toString(); // Use the entire timestamp as a string
+  const randomNumbers = Math.floor(Math.random() * 1000); // Generate a random number between 0 and 999
+  const userID = `${timestamp}${randomNumbers}`.slice(0, 7); // Concatenate timestamp and random number
+  return userID;
+}
+
+const AdminServices = {
+  registerUser: async (body) => {
+    const existingData = JSON.parse(localStorage.getItem("User_Master")) || [];
+
+   
+
+    
+    const res = {
+      UserID: generateUserID(),
+      Name: body.name,
+      Password: body.password,
+      Mobile_No: body.Mobile_No,
+      email: body.email,
+      Account_Type: "User",
+    };
+  
+    const updatedData = [...existingData, res];
+  
+    if (res.Name && res.Mobile_No && res.email && res.Account_Type) {
+      localStorage.setItem("User_Master", JSON.stringify(updatedData));
+    }
+  
+    return res;
+  },
+
+  registerAdmin: async (body) => {
+    const existingData = JSON.parse(localStorage.getItem("Admin_Master")) || [];
+  
+    const res = {
+     AdminID: generateUserID(),
+      Name: body.name,
+      Password: body.password,
+      Mobile_No: body.Mobile_No,
+      email: body.email,
+      Account_Type: "Admin",
+      IsLocked: false,
+      Issuperadmin: false,
+      IsDeleted: false,
+      // Account_Type: "Admin",
+    };
+  
+    const updatedData = [...existingData, res];
+  
+    if (res.Name && res.Mobile_No && res.email && res.Account_Type) {
+      localStorage.setItem("Admin_Master", JSON.stringify(updatedData));
+    }
+  
+    return res;
+  },
+  
+  loginUser: async (body) => {
+    const adminData = JSON.parse(localStorage.getItem("User_Master")) || [];
+  
+    const matchedAdmin = adminData.find(
+      (admin) => admin.email === body.email && admin.Password === body.password
+    );
+  
+    if (matchedAdmin) {
+      // Successful login logic here
+      // For example, you could dispatch an action or set a user state
+      // return some success response if needed
+      return { success: true, admin: matchedAdmin };
+      // console.log("success");
+    } else {
+      // Unsuccessful login logic here
+      // For example, you could return an error response
+      return { success: false, message: "Invalid email or password" };
+      // console.log("false");
+    }
+  },  
+
+  loginAdmin: async (body) => {
+    const adminData = JSON.parse(localStorage.getItem("Admin_Master")) || [];
+  
+    const matchedAdmin = adminData.find(
+      (admin) => admin.email === body.email && admin.Password === body.password
+    );
+  
+    if (matchedAdmin) {
+      if (matchedAdmin.IsLocked) {
+        // Admin is locked, return appropriate response
+        return { success: false, message: "Locked by superadmin" };
+      }
+  
+      if (matchedAdmin.IsDeleted) {
+        // Admin is deleted, return appropriate response
+        return { success: false, message: "Deleted by superadmin" };
+      }
+  
+      // Successful login logic here
+      // For example, you could dispatch an action or set a user state
+      // return some success response if needed
+      return { success: true, admin: matchedAdmin };
+    } else {
+      // Unsuccessful login logic here
+      // For example, you could return an error response
+      return { success: false, message: "Invalid email or password" };
+    }
+  },  
+
+
+  forgetPassword: async (body) => {
+    const existingData = JSON.parse(localStorage.getItem("Admin")) || [];
+    
+    // Find the index of the provided email in the existing data
+    const matchedEmailIndex = existingData.findIndex((admin) => admin.email === body.verifyEmail);
+  
+    if (matchedEmailIndex !== -1) {
+      // Email exists, proceed with password reset logic
+      // You can implement the password reset logic here
+      
+      console.log(`Email found at index ${matchedEmailIndex}. Proceed with password reset.`);
+      console.log(`/reset-password/${matchedEmailIndex}`);
+      notifySuccess("Your Password reset link is send to your email");
+    } else {
+      // Email does not exist in the existing data
+      console.log("Email not found. Cannot proceed with password reset.");
+      notifyError("Email not found. Cannot proceed with password reset.");
+    }
+    
+  },
+  
+
+  StrategyMaster: async (body) => {
+    const existingData = JSON.parse(localStorage.getItem("StrategyMaster")) || [];
+    const res = {
+      StrategyID: 1,
+      exchange: body.exchange,
+      bankniftyOption: body.bankniftyOption,
+      finniftyOption: body.finniftyOption,
+      futuresOption: body.futuresOption,
+      niftyOption: body.niftyOption,
+      optionsOption: body.optionsOption,
+      selectedOption: body.selectedOption,
+      strategyName: body.strategyName,
+      ActiveFlag: true,
+    };
+    const updatedData = [...existingData, res];
+  
+    // if (res.StrategyName && res.ScriptAssetName) {
+      localStorage.setItem("StrategyMaster", JSON.stringify(updatedData));
+    // }
+  
+    return res;
+   
+  },
+
+  resetPassword: async (body) => {
+    const existingData = JSON.parse(localStorage.getItem("Admin")) || [];
+    
+    // Convert body.token to a numeric index
+    const adminIndex = parseInt(body.token, 10);
+    
+    if (!isNaN(adminIndex) && adminIndex >= 0 && adminIndex < existingData.length) {
+      // Update the password of the admin with the new password
+      existingData[adminIndex].Password = body.newPassword;
+  
+      // Save the updated data back to local storage
+      localStorage.setItem("Admin", JSON.stringify(existingData));
+  
+      console.log("Password reset successful.");
+      notifySuccess("Password reset successful.");
+    } else {
+      console.log("Invalid token. Cannot reset password.");
+      notifyError("Invalid token. Cannot reset password.");
+    }
+  },
+  
+  
+
+  signUpWithProvider: async (body) => {
+    return requests.post("/admin/signup", body);
+  },
+
+  addStaff: async (body) => {
+    return requests.post("/admin/add", body);
+  },
+  getAllStaff: async (body) => {
+    return requests.get("/admin", body);
+  },
+  getStaffById: async (id, body) => {
+    return requests.post(`/admin/${id}`, body);
+  },
+
+  updateStaff: async (id, body) => {
+    return requests.put(`/admin/${id}`, body);
+  },
+
+  updateStaffStatus: async (id, body) => {
+    return requests.put(`/admin/update-status/${id}`, body);
+  },
+
+  deleteStaff: async (id) => {
+    return requests.delete(`/admin/${id}`);
+  },
+};
+
+export default AdminServices;

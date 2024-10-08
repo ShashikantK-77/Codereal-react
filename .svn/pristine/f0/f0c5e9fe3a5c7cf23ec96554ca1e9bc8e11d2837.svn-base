@@ -1,0 +1,96 @@
+import React, { useState } from "react";
+import { Avatar, Badge, Button } from "@windmill/react-ui";
+import { Link } from 'react-router-dom'; 
+
+const suggestedStrategies = [
+  {
+    id: 1,
+    title: "Short Straddle",
+    status:"2 Leg | Nifty Bank | Intraday | Required Margin 180K | ",
+    description:
+      " Bank Nifty will experience very little volatility. Sell Call and sell Put option of same strike price. Risk is unlimited and Reward is...",
+    time:"Start Time: 09 : 30 | End Time: 15 : 00",
+      subscribed: false,
+  },
+  {
+    id: 2,
+    title: "Bullish Put Spread",
+    status:"2 Leg | Nifty Bank | Intraday | Required Margin 35K |",
+    description:
+      " Bank Nifty will experience very little volatility. Sell Call and sell Put option of same strike price. Risk is unlimited and Reward is...",
+    time:" Start Time: 09 : 30 | End Time: 15 : 00",
+      subscribed: false,
+  },
+  {
+    id: 3,
+    title: "Synthetic Call",
+    status:"2 Leg | Nifty Bank | Intraday | Required Margin 180K | ",
+    description:
+      " Bank Nifty will experience very little volatility. Sell Call and sell Put option of same strike price. Risk is unlimited and Reward is...",
+    time:"Start Time: 09 : 30 | End Time: 15 : 00",
+      subscribed: false,
+  },
+  // Add more suggested strategies here
+];
+
+const SuggestStrategy = () => {
+  const [strategies, setStrategies] = useState(suggestedStrategies);
+
+  const handleSubscribe = (id) => {
+    const updatedStrategies = strategies.map((strategy) =>
+      strategy.id === id ? { ...strategy, subscribed: true } : strategy
+    );
+    setStrategies(updatedStrategies);
+  };
+
+  return (
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 my-6">
+      {strategies.map((strategy) => (
+        <div
+          key={strategy.id}
+          className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"
+        >
+          <h3 className="text-lg font-semibold text-red-600 dark:text-gray-200">
+            {strategy.title}
+          </h3>
+
+          <p className="text-gray-600 dark:text-gray-300 mb-1 text-sm">
+            {strategy.time}
+          </p>
+
+          <p className="text-gray-600 dark:text-gray-300 mb-2 text-sm">
+            {strategy.status}
+          </p>
+
+          <p className="text-gray-600 dark:text-gray-300 mb-2 text-sm">
+            {strategy.description}
+          </p>
+         
+          {strategy.subscribed ? (
+            <Badge className="text-sm">Subscribed</Badge>
+          ) : (
+            <div className="flex items-center justify-between space-x-4">
+  <Button
+    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex-grow"
+    onClick={() => handleSubscribe(strategy.id)}
+  >
+    Subscribe
+  </Button>
+  <div className="flex-grow">
+    <Link to="/StrategyDetails">
+      <Button className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded w-full">
+        Know More
+      </Button>
+    </Link>
+  </div>
+</div>
+
+
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default SuggestStrategy;

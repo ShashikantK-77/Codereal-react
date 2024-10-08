@@ -1,0 +1,432 @@
+// import React, { useState, useEffect } from 'react';
+// import { Button, Input, Modal } from '@windmill/react-ui';
+// import PageTitle from 'components/Typography/PageTitle';
+
+// const TradingAccount = () => {
+//   const [brokers, setBrokers] = useState([]);
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+//   const [selectedBroker, setSelectedBroker] = useState(null);
+//   const [brokerInfo, setBrokerInfo] = useState(null);
+//   const [formData, setFormData] = useState({});
+//   const [apiResponse, setApiResponse] = useState(null);
+
+//   useEffect(() => {
+//     // Fetch data from local storage
+//     const storedData = localStorage.getItem('Broker_Master');
+
+//     // Check if data exists in local storage
+//     if (storedData) {
+//       const parsedData = JSON.parse(storedData);
+//       setBrokers(parsedData);
+//     }
+//   }, []);
+
+//   const handleLogoClick = (broker) => {
+//     setSelectedBroker(broker);
+//     setIsModalOpen(true);
+//   };
+
+//   const closeModal = () => {
+//     setIsModalOpen(false);
+//   };
+
+// //   const handleSubmit = async (e) => {
+// //     e.preventDefault();
+// //     console.log('IN LOG handleSubmit - Start');
+  
+// //     try {
+// //       // Make GET request to your custom API endpoint on the server
+// //       const response = await fetch('http://localhost:3000/getAlpacaAccount', {
+// //         method: 'GET',
+// //       });
+  
+// //       console.log('API Response :', response);
+// //       console.log('API Response Status:', response.status);
+
+// //       console.log("selectedBroker:",selectedBroker);
+  
+// //       if (!response.ok) {
+// //         throw new Error(`HTTP error! Status: ${response.status}`);
+// //       }
+  
+// //       // Parse and set the API response
+// //       const responseData = await response.json();
+// //       setApiResponse(responseData);
+// //     } catch (error) {
+// //       console.error('Error sending API request:', error);
+// //     }
+  
+// //     console.log('IN LOG handleSubmit - End');
+// //     // closeModal();
+// //   };
+  
+
+// const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     console.log('IN LOG handleSubmit - Start');
+
+//     try {
+//       // Check if selectedBroker and formData are available
+//       if (!selectedBroker || !formData) {
+//         console.error('Selected broker or form data is missing.');
+//         return;
+//       }
+
+//       // Construct dynamic API URL
+//       const apiUrl = selectedBroker.Api;
+
+//       // Make POST request to dynamic API URL with dynamic headers
+//       const response = await fetch('http://localhost:3000/getAlpacaAccount', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           apiKey: formData.appKey,
+//           apiSecret: formData.secretKey,
+//           apiUrl: apiUrl,
+//         }),
+//       });
+
+//       console.log('API Response:', response);
+//       console.log('API Response Status:', response.status);
+
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! Status: ${response.status}`);
+//       }
+
+//       // Parse and set the API response
+//       const responseData = await response.json();
+//       setApiResponse(responseData);
+//     } catch (error) {
+//       console.error('Error sending API request:', error);
+//     }
+
+//     console.log('IN LOG handleSubmit - End');
+//   };
+  
+  
+
+//   const handleInputChange = (e) => {
+//     // Update formData when input values change
+//     setFormData({
+//       ...formData,
+//       [e.target.name]: e.target.value,
+//     });
+//   };
+
+//   return (
+//     <div>
+//       <PageTitle>Trading Account</PageTitle>
+//       {brokers.map((market, index) => (
+//         <div key={index} className="mb-4">
+//           <h2 className="text-xl font-semibold mb-2">{market.market} (2+)</h2>
+//           <div className="flex flex-wrap">
+//             {market.brokers.map((broker, idx) => (
+//               <div key={idx} className="logo-container m-2" onClick={() => handleLogoClick(broker)}>
+//                 <img src={broker.logoUrl} alt={broker.name} className="w-20 h-20 cursor-pointer" />
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       ))}
+//       <Modal isOpen={isModalOpen} onClose={closeModal}>
+//         {selectedBroker && (
+//           <div>
+//             <h1>You selected {selectedBroker.name} broker</h1>
+//             <h2>Broker Information:</h2>
+//             <pre>{JSON.stringify(brokerInfo, null, 2)}</pre>
+//             <form onSubmit={handleSubmit}>
+//               {selectedBroker.fields.map((field, idx) => (
+//                 <div key={idx} className="mb-4">
+//                   <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
+//                     {field.label}
+//                   </label>
+//                   <Input
+//                     type={field.type}
+//                     id={field.id}
+//                     name={field.id}
+//                     value={formData[field.id] || ''}
+//                     onChange={handleInputChange}
+//                     className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-500 block w-full"
+//                   />
+//                 </div>
+//               ))}
+
+//               <div className="mt-4">
+//                 <Button
+//                   type="submit"
+//                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+//                 >
+//                   Submit
+//                 </Button>
+//               </div>
+//             </form>
+//             {/* {apiResponse && (
+//               <div>
+//                 <h2>API Response:</h2>
+//                 <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
+//               </div>
+//             )} */}
+//           </div>
+//         )}
+//       </Modal>
+//     </div>
+//   );
+// };
+
+// export default TradingAccount;
+
+
+import React, { useState, useEffect } from 'react';
+import { Button, Input, Modal } from '@windmill/react-ui';
+import PageTitle from 'components/Typography/PageTitle';
+
+const TradingAccount = () => {
+  const [brokers, setBrokers] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBroker, setSelectedBroker] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [apiResponse, setApiResponse] = useState(null);
+
+  useEffect(() => {
+    // Fetch data from local storage
+    const storedData = localStorage.getItem('Broker_Master');
+
+    // Check if data exists in local storage
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setBrokers(parsedData);
+    }
+  }, []);
+
+  const handleLogoClick = (broker) => {
+    setSelectedBroker(broker);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log('IN LOG handleSubmit - Start');
+  
+    try {
+      // Check if selectedBroker and formData are available
+      if (!selectedBroker || !formData) {
+        console.error('Selected broker or form data is missing.');
+        return;
+      }
+  
+      // Construct dynamic API URL
+      const apiUrl = selectedBroker.Api;
+  
+      // Make POST request to dynamic API URL with dynamic headers
+      const response = await fetch('http://localhost:3000/getAlpacaAccount', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apiKey: formData.appKey,
+          apiSecret: formData.secretKey,
+          apiUrl: apiUrl,
+        }),
+      });
+  
+      console.log('API Response:', response);
+    //   console.log('API Response Status:', response.status);
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      // Parse and set the API response
+      const responseData = await response.json();
+      setApiResponse(responseData);
+  
+      // Log the API response
+      console.log('Parsed API Response:', responseData);
+
+       // Extract relevant data for your structure using map
+    const structuredData = Object.keys(responseData).map((parameterName) => ({
+        id: responseData.id,
+        userid: 'your_user_id',
+        brokerid: 'your_broker_id',
+        parametername: parameterName,
+        parametervalue: responseData[parameterName],
+        connecteddate: responseData.created_at,
+        isActive: responseData.status === 'ACTIVE', // You can replace this with the actual condition
+        updatedDate: new Date().toISOString(),
+      }));
+  
+      // Store structuredData in local storage
+      const existingData = JSON.parse(localStorage.getItem('userbrokerinfo')) || [];
+      existingData.push(...structuredData);
+      localStorage.setItem('userbrokerinfo', JSON.stringify(existingData));
+  
+    }
+    //  catch (error) {
+    //   console.error('Error sending API request:', error);
+    // }
+     catch (error) {
+      console.error('Error sending API request:', error);
+    }
+  
+    console.log('IN LOG handleSubmit - End');
+  };
+  
+
+  const handleInputChange = (e) => {
+    // Update formData when input values change
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  return (
+    <div>
+      <PageTitle>Trading Account</PageTitle>
+      {brokers.map((market, index) => (
+        <div key={index} className="mb-4">
+          <h2 className="text-xl font-semibold mb-2">{market.market} (2+)</h2>
+          <div className="flex flex-wrap">
+            {market.brokers.map((broker, idx) => (
+              <div key={idx} className="logo-container m-2" onClick={() => handleLogoClick(broker)}>
+                <img src={broker.logoUrl} alt={broker.name} className="w-20 h-20 cursor-pointer" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        {selectedBroker && (
+          <div>
+            <h1>You selected <span className='text-bold text-lg'>{selectedBroker.name}</span> broker</h1>
+            <form onSubmit={handleSubmit}>
+              {selectedBroker.fields.map((field, idx) => (
+                <div key={idx} className="mb-4">
+                  <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
+                    {field.label}
+                  </label>
+                  <Input
+                    type={field.type}
+                    id={field.id}
+                    name={field.id}
+                    value={formData[field.id] || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-500 block w-full"
+                  />
+                </div>
+              ))}
+
+              <div className="mt-4">
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                  Submit
+                </Button>
+              </div>
+            </form>
+            {/* {apiResponse && (
+              <div>
+                <h2>API Response:</h2>
+                <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
+              </div>
+            )} */}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
+
+export default TradingAccount;
+
+
+
+
+
+
+// Sample data
+// const brokerData = [
+//     {
+//       market: 'Indian Market',
+//       brokers: [
+//         {
+//           name: 'Alpaca',
+//           logoUrl: 'https://www.eu-startups.com/wp-content/uploads/2023/07/alpaca-logo1-500x500.png',
+//           fields: [
+//             { id: 'secretKey', label: 'Secret Key', type: 'text' },
+//             { id: 'appKey', label: 'App Key', type: 'text' },
+//             // Add more fields as needed
+//           ],
+//           Api: 'https://paper-api.alpaca.markets/v2/account',
+//         },
+//         {
+//           name: '5 paisa',
+//           logoUrl: 'data:image/jpeg;base64,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',
+//           fields: [
+//             { id: 'clientcode', label: 'client code', type: 'text' },
+//             { id: 'accesstoken', label: 'Access Token', type: 'text' },
+//             // Add more fields as needed
+//           ],
+//           Api: 'https://paper-api.alpaca.markets/v2/account',
+//         },
+//         {
+//             name: 'Dhan',
+//             logoUrl: 'https://pbs.twimg.com/profile_images/1610246738413248512/0Om-vhfG_400x400.jpg',
+//             fields: [
+//               { id: 'clientcode', label: 'client code', type: 'text' },
+//               { id: 'accesstoken', label: 'Access Token', type: 'text' },
+//               // Add more fields as needed
+//             ],
+//             Api: 'https://paper-api.alpaca.markets/v2/account',
+//           },
+//           {
+//             name: 'ICICI Direct',
+//             logoUrl: 'https://pbs.twimg.com/profile_images/1307946001987186688/UXPEmR6c_400x400.png',
+//             fields: [
+//               { id: 'clientcode', label: 'Client Code', type: 'text' },
+//               { id: 'apikey', label: 'Api Key', type: 'text' },
+//               { id: 'secretKey', label: 'Secret Key', type: 'text' },
+//               { id: 'token', label: 'Token', type: 'text' },
+//               // Add more fields as needed
+//             ],
+//             Api: 'https://paper-api.alpaca.markets/v2/account',
+//           },
+//           {
+//             name: 'Zebu',
+//             logoUrl: 'https://5.imimg.com/data5/SELLER/Default/2021/11/UF/DQ/BP/142531778/zebu-logo-tm-blue-png-250x250.png',
+//             fields: [
+        
+//               { id: 'apikey', label: 'Api Key', type: 'text' },
+//               { id: 'secretKey', label: 'Secret Key', type: 'text' },
+              
+//               // Add more fields as needed
+//             ],
+//             Api: 'https://paper-api.alpaca.markets/v2/account',
+//           },
+//       ],
+//     },
+//     {
+//       market: 'Forex Market',
+//       brokers: [
+//         {
+//           name: 'Business Guide',
+//           logoUrl: 'https://i.pinimg.com/564x/96/3a/85/963a853539af737933a2ef24c04a0aeb.jpg',
+//           fields: [
+//             { id: 'apiToken', label: 'API Token', type: 'text' },
+//             // Add more fields as needed
+//           ],
+//         },
+//       ],
+//     },
+//   ];
+  
+//   // Save data to local storage
+//   localStorage.setItem('Broker_Master', JSON.stringify(brokerData));

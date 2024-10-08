@@ -1,0 +1,494 @@
+import {
+  Button,
+  Card,
+  CardBody,
+  Input,
+  Label,
+  Pagination,
+  Select,
+  Table,
+  TableCell,
+  TableContainer,
+  TableFooter,
+  TableHeader,
+} from "@windmill/react-ui";
+import { useContext, useEffect, useState } from "react";
+import { IoCloudDownloadOutline } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
+import exportFromJSON from "export-from-json";
+import { useLocation } from 'react-router-dom';
+
+//internal import
+import useAsync from "hooks/useAsync";
+import useFilter from "hooks/useFilter";
+import OrderServices from "services/OrderServices";
+import NotFound from "components/table/NotFound";
+import PageTitle from "components/Typography/PageTitle";
+import { SidebarContext } from "context/SidebarContext";
+import OrderTable from "components/order/OrderTable";
+import TableLoading from "components/preloader/TableLoading";
+import { notifyError } from "utils/toast";
+import spinnerLoadingImage from "assets/img/spinner.gif";
+import { useListContext } from "context/ListContext";
+
+
+const Orders = () => {
+  const [orders, setOrders] = useState([]);
+  const [activeButton, setActiveButton] = useState('Open');
+  const [currentPage, setCurrentPage] = useState(1); // Set the initial page number to 1
+  const [searchName, setSearchName] = useState("");
+  const [totalResults,seTotalResults] =useState([]);
+  const { masterorderList } = useListContext();
+  
+  masterorderList.reverse();
+  const resultsPerPage = 3;
+  
+
+
+  const {
+    time,
+    setTime,
+    searchText,
+    searchRef,
+    status,
+    setStatus,
+    handleSubmitForAll,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    lang,
+  } = useContext(SidebarContext);
+
+  const { t } = useTranslation();
+  const [loadingExport, setLoadingExport] = useState(false);
+  const [masterAccounts, setMasterAccounts] = useState([]);
+  const [master,SetMaster] = useState();
+
+  const { data, loading } = useAsync(() =>
+    OrderServices.getAllOrders({
+      // customerName: searchText,
+      // status,
+      // page: currentPage,
+      // limit: resultsPerPage,
+      // day: time,
+      // startDate,
+      // endDate,
+    })
+  );
+
+  // const existingDataString = localStorage.getItem('masterorder');
+  // let existingData = existingDataString ? JSON.parse(existingDataString) : [];
+  // const reversedOrders = existingData.reverse();
+  //     setOrders(reversedOrders);
+
+  
+  // useEffect(()=>{
+
+
+
+  //       const filteredList = masterorderList.filter(
+  //         (client) =>
+  //         client.orderno.includes(searchName.toLowerCase())
+  //       );
+  //       setOrders(
+  //         masterorderList.slice(
+  //           (currentPage - 1) * resultsPerPage,
+  //           currentPage * resultsPerPage
+  //         )
+  //       );
+      
+  //       const totalres = orders.length;
+  //       seTotalResults(totalres);
+  // },[masterorderList, currentPage, resultsPerPage, searchName]);
+
+  // useEffect(() => {
+  //   const filteredOrders = masterorderList.filter((order) => {
+  //     // Apply your filter logic here
+  //     // For example, check if order status matches the selected status
+  //     // if (status && order.status !== status) {
+  //     //   return false;
+  //     // }
+  //     // Add more filter conditions if needed
+
+  //     // const filteredOrders = masterorderList.filter((order) => {
+  //     //   return order.UniqueKey === master;
+  //     // }
+
+   
+  
+  //     // Apply search text filter
+  //     if (searchName && !order.orderno.includes(searchName.toLowerCase())) {
+  //       console.log("Filtered out:", order);
+  //       return false;
+  //     }
+  
+  //     // Apply date range filter
+  //     if (startDate && endDate) {
+  //       const orderDate = new Date(order.createdAt).getTime();
+  //       const startTimestamp = new Date(startDate).getTime();
+  //       const endTimestamp = new Date(endDate).getTime();
+  //       if (orderDate < startTimestamp || orderDate > endTimestamp) {
+  //         return false;
+  //       }
+  //     }
+  
+  //     // If all filters pass, include the order
+  //     return true;
+  //   });
+  
+  //   const startIndex = (currentPage - 1) * resultsPerPage;
+  //   const endIndex = startIndex + resultsPerPage;
+
+  //   const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+  //   setOrders(paginatedOrders);
+  
+  //   seTotalResults(filteredOrders.length);
+
+  //   // if (master){
+  //   //   console.log("masterorderList:",masterorderList,"master:",master);
+  //   //   const existingClient = masterorderList.find((client) => client.UniqueKey === master);
+  //   //   console.log(existingClient);
+  //   //   setOrders(existingClient)
+  
+  //   //   }
+
+
+
+
+  //   const fetchMasterAccounts = async () => {
+  //     try {
+  //       // const data = await CustomerServices.getMasterAccounts(); // Replace with your API call to get master accounts
+  //       const data = localStorage.getItem('masterlist')
+  //       const list = data ? JSON.parse(data) : [];
+  //       setMasterAccounts(list);
+
+  //     } catch (error) {
+  //       // Handle error
+  //     }
+  //   };
+  //   fetchMasterAccounts();
+  // }, [masterorderList, currentPage, resultsPerPage, status, searchText, startDate, endDate,master]);
+
+  // setOrders(masterorderList);
+
+  useEffect(() => {
+    const filteredOrders = masterorderList.filter((order) => {
+      // Apply search text filter
+      if (searchName && !order.orderno.includes(searchName.toLowerCase())) {
+        console.log("Filtered out:", order);
+        return false;
+      }
+  
+      // Apply date range filter
+      if (startDate && endDate) {
+        const orderDate = new Date(order.createdAt).getTime();
+        const startTimestamp = new Date(startDate).getTime();
+        const endTimestamp = new Date(endDate).getTime();
+        if (orderDate < startTimestamp || orderDate > endTimestamp) {
+          return false;
+        }
+      }
+  
+     // Apply master filter
+    if (master && master !== "All" && order.UniqueKey !== master) {
+      return false;
+    }
+  
+      // If all filters pass, include the order
+      return true;
+    });
+  
+    const startIndex = (currentPage - 1) * resultsPerPage;
+    const endIndex = startIndex + resultsPerPage;
+  
+    const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+    setOrders(paginatedOrders);
+  
+    seTotalResults(filteredOrders.length);
+  
+    const fetchMasterAccounts = async () => {
+      try {
+        const data = localStorage.getItem('masterlist');
+        const list = data ? JSON.parse(data) : [];
+        setMasterAccounts(list);
+      } catch (error) {
+        // Handle error
+      }
+    };
+    fetchMasterAccounts();
+    
+  }, [masterorderList, currentPage, resultsPerPage, searchName, startDate, endDate, master]);
+  
+
+  
+
+
+  const handleChangePage = (page) => {
+    setCurrentPage(page); // Update the currentPage when the page changes
+    setSearchName("");
+  };
+
+
+  const {serviceData, globalSetting } = useFilter(data?.orders);
+  
+
+// const dataTable = orders;
+
+
+  const handleDownloadOrders = async () => {
+    try {
+      setLoadingExport(true);
+  
+      // Use the filteredOrders array that was constructed for display
+      const exportData = masterorderList.map((order) => {
+        return {
+          _id: order.orderno,
+          orderdate: order.orderdate,
+          symbol: order.symbol,
+          quantity: order.quantity,
+          status: order.status,
+        };
+      });
+  
+      exportFromJSON({
+        data: exportData,
+        fileName: "orders",
+        exportType: exportFromJSON.types.csv,
+      });
+      setLoadingExport(false);
+    } catch (err) {
+      setLoadingExport(false);
+      console.log("err on orders download", err);
+      notifyError(err ? err?.response?.data?.message : err.message);
+    }
+  };
+
+  const handleButtonClick = (buttonName) => {
+    setActiveButton(buttonName);
+  };
+
+
+
+
+  return (
+    <>
+      <PageTitle>{t("Orders")}</PageTitle>
+
+      <Card className="min-w-0 shadow-xs overflow-hidden bg-white dark:bg-gray-800 mb-5">
+        <CardBody>
+          <form onSubmit={handleSubmitForAll}>
+            <div className="grid gap-4 lg:gap-6 xl:gap-6 lg:grid-cols-3 xl:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 py-2">
+              <div>
+                <Input
+                  ref={searchRef}
+                  type="search"
+                  name="search"
+                  onChange={(e) => setSearchName(e.target.value)}
+                  className="border h-12 text-sm focus:outline-none block w-full bg-gray-100 border-transparent focus:bg-white"
+                  placeholder="Search by Order ID"
+                />
+              </div>
+
+              <div>
+                {/* <Select
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="border h-12 text-sm focus:outline-none block w-full bg-gray-100 border-transparent focus:bg-white"
+                >
+                  <option value="Status" defaultValue hidden>
+                    {t("Status")}
+                  </option>
+                  <option value="Delivered">{t("PageOrderAll")}</option>
+                  <option value="Pending">{t("PageOrderOpen")}</option>
+                  <option value="Processing">{t("PageOrderCompleted")}</option>
+                  <option value="Cancel">{t("OrderCancel")}</option>
+                </Select> */}
+
+                <div className="flex space-x-2 justify-around">
+                <button
+        className={`py-2 px-4 rounded-md ${
+          activeButton === 'All'
+            ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700'
+        } hover:bg-green-400 hover:text-white focus:outline-none`}
+        onClick={() => handleButtonClick('All')}
+      >
+        All
+      </button>
+      <button
+        className={`py-2 px-4 rounded-md ${
+          activeButton === 'Open'
+            ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700'
+        } hover:bg-green-400 hover:text-white focus:outline-none`}
+        onClick={() => handleButtonClick('Open')}
+      >
+        Open
+      </button>
+      <button
+        className={`py-2 px-4 rounded-md ${
+          activeButton === 'Close'
+            ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700'
+        } hover:bg-green-400 hover:text-white focus:outline-none`}
+        onClick={() => handleButtonClick('Close')}
+      >
+        Close
+      </button>
+      <button
+        className={`py-2 px-4 rounded-md ${
+          activeButton === 'Complete'
+            ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700'
+        } hover:bg-green-400 hover:text-white focus:outline-none`}
+        onClick={() => handleButtonClick('Complete')}
+      >
+        Complete
+      </button>
+      <button
+        className={`py-2 px-4 rounded-md ${
+          activeButton === 'Cancel'
+            ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700'
+        } hover:bg-green-400 hover:text-white focus:outline-none`}
+        onClick={() => handleButtonClick('Cancel')}
+      >
+        Cancel
+      </button>
+    </div>
+
+              </div>
+
+              <div>
+                <Select
+                  onChange={(e) => SetMaster(e.target.value)}
+                  className="border h-12 text-sm focus:outline-none block w-full bg-gray-100 border-transparent focus:bg-white"
+               placeholder="Select Master"
+                >
+                  {/* <option value="Order limits" defaultValue hidden>
+                    {t("Orderlimits")}
+                  </option>
+                  <option value="5">{t("DaysOrders5")}</option>
+                  <option value="7">{t("DaysOrders7")}</option>
+                  <option value="15">{t("DaysOrders15")}</option>
+                  <option value="30">{t("DaysOrders30")}</option> */}
+                  <option value="All">All</option>
+                  {masterAccounts.map((account) => (
+              <option key={account.UniqueKey} value={account.UniqueKey}>
+                {account.Account_Name}
+              </option>
+            ))}
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:gap-6 xl:gap-6 lg:grid-cols-3 xl:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 py-2">
+              <div>
+                <Label>Start Date</Label>
+                <Input
+                  type="date"
+                  name="startDate"
+                  className="border h-12 text-sm focus:outline-none block w-full bg-gray-100 border-transparent focus:bg-white"
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label>End Date</Label>
+                <Input
+                  type="date"
+                  name="startDate"
+                  className="border h-12 text-sm focus:outline-none block w-full bg-gray-100 border-transparent focus:bg-white"
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+
+              <div className="w-8/12 mx-auto">
+                <Label style={{ visibility: "hidden" }}>{t("Download")}</Label>
+                {loadingExport ? (
+                  <Button disabled={true} type="button" className="h-12 w-full">
+                    <img
+                      src={spinnerLoadingImage}
+                      alt="Loading"
+                      width={20}
+                      height={10}
+                    />{" "}
+                    <span className="font-serif ml-2 font-light">
+                      Processing
+                    </span>
+                  </Button>
+                ) : (
+                  <button
+                    onClick={handleDownloadOrders}
+                    disabled={data?.orders?.length <= 0 || loadingExport}
+                    type="button"
+                    className={`${
+                      (data?.orders?.length <= 0 || loadingExport) &&
+                      "opacity-50 cursor-not-allowed bg-red-300"
+                    } flex items-center justify-center text-sm leading-5 h-12 w-full text-center transition-colors duration-150 font-medium focus:outline-none px-6 py-2 rounded-md text-white bg-green-500 border border-transparent active:bg-green-600 hover:bg-green-600 focus:ring focus:ring-purple-300`}
+                  >
+                    Download All Orders
+                    <span className="ml-2 text-base">
+                      <IoCloudDownloadOutline />
+                    </span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+        </CardBody>
+      </Card>
+
+      {loading ? (
+        <TableLoading row={12} col={7} width={160} height={20} />
+      ) : orders?.length !== 0 ? (
+        <TableContainer className="mb-8 dark:bg-gray-900">
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableCell className="text-center">{t("OrderNo")}</TableCell>
+                <TableCell className="text-center">{t("TimeTbl")}</TableCell>
+                {/* <TableCell className="text-center">{t("CustomerName")}</TableCell> */}
+                <TableCell className="text-center">SCRIP</TableCell>
+                {/* <TableCell className="text-center">SCRIP NAME</TableCell> */}
+                <TableCell className="text-center">{t("MethodTbl")}</TableCell>
+                {/* <TableCell className="text-center">{t("AmountTbl")}</TableCell> */}
+                <TableCell className="text-center">Quantity</TableCell>
+                <TableCell className="text-center">Price</TableCell>
+                <TableCell className="text-center">{t("OderStatusTbl")}</TableCell>
+                {/* <TableCell className="text-center">{t("ActionTbl")}</TableCell> */}
+                {/* <TableCell className="text-right">{t("InvoiceTbl")}</TableCell> */}
+                <TableCell className="text-right">LOGS</TableCell>
+              </tr>
+            </TableHeader>
+{/* 
+            <OrderTable
+              lang={lang}
+              orders={dataTable}
+              globalSetting={globalSetting}
+              currency={globalSetting?.default_currency || "$"}
+            /> */}
+
+            
+            <OrderTable
+              orders={orders}
+            />
+          </Table>
+
+          <TableFooter>
+            <Pagination
+              totalResults={totalResults}
+              resultsPerPage={resultsPerPage}
+              onChange={handleChangePage}
+              label="Table navigation"
+            />
+          </TableFooter>
+        </TableContainer>
+      ) : (
+        <NotFound title="Sorry, There are no orders right now." />
+      )}
+    </>
+  );
+};
+
+export default Orders;

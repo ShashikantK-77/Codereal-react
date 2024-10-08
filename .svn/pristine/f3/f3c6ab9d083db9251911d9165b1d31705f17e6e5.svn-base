@@ -1,0 +1,23 @@
+import React from 'react'
+
+import PageTitle from "components/Typography/PageTitle";
+
+import ParentStepper from 'components/KYC/ParentStepper';
+
+
+
+const Kyc = () => {
+   
+    return (
+        <div>
+            <PageTitle>Create Strategy</PageTitle>
+
+     
+            <ParentStepper/>
+     
+            
+        </div>
+    )
+}
+
+export default Kyc
