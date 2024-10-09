@@ -39,7 +39,7 @@ const useLoginSubmit = () => {
         .then((res) => {
           setLoading(false);
           if (res.success) {
-            notifySuccess('Login Success!');
+            // notifySuccess('Login Success!');
     
             dispatch({ type: 'USER_LOGIN', payload: res.token });
 
